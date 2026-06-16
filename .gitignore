@@ -1,0 +1,6 @@
+node_modules
+*.log
+*.gz
+.idea
+.env
+http

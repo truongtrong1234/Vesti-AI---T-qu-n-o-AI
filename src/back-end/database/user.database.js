@@ -1,5 +1,17 @@
 import { pool } from "./mariadb.js";
 
+function toDateOnly(value) {
+  if (value === null || value === undefined || value === "") return null;
+  if (value instanceof Date) {
+    const yyyy = value.getFullYear();
+    const mm = String(value.getMonth() + 1).padStart(2, "0");
+    const dd = String(value.getDate()).padStart(2, "0");
+    return `${yyyy}-${mm}-${dd}`;
+  }
+  if (typeof value === "string") return value; // expecting YYYY-MM-DD
+  return null;
+}
+
 export async function createUser({
   email,
   password,
@@ -8,7 +20,8 @@ export async function createUser({
   age = null,
   gender = null,
   dateofbirth = null,
-  job = null
+  job = null,
+  picture_url = null
 }) {
   let conn;
   try {
@@ -16,10 +29,20 @@ export async function createUser({
 
     const res = await conn.query(
       `
-      INSERT INTO users (email, password, name, phone_number, age, gender, dateofbirth, job)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO users (email, password, name, phone_number, age, gender, dateofbirth, job, picture_url)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
       `,
-      [email, password, name, phone_number, age, gender, dateofbirth, job]
+      [
+        email,
+        password,
+        name,
+        phone_number,
+        age,
+        gender,
+        toDateOnly(dateofbirth),
+        job,
+        picture_url
+      ]
     );
 
     return {
@@ -29,8 +52,9 @@ export async function createUser({
       phone_number,
       age,
       gender,
-      dateofbirth,
-      job
+      dateofbirth: toDateOnly(dateofbirth),
+      job,
+      picture_url
     };
   } finally {
     if (conn) conn.release();
@@ -39,7 +63,7 @@ export async function createUser({
 
 export async function updateUser(
   user_id,
-  { email, name, phone_number, age, gender, dateofbirth, job }
+  { email, name, phone_number, age, gender, dateofbirth, job, picture_url }
 ) {
   let conn;
   try {
@@ -70,11 +94,15 @@ export async function updateUser(
     }
     if (dateofbirth !== undefined) {
       fields.push("dateofbirth = ?");
-      params.push(dateofbirth);
+      params.push(toDateOnly(dateofbirth));
     }
     if (job !== undefined) {
       fields.push("job = ?");
       params.push(job);
+    }
+    if (picture_url !== undefined) {
+      fields.push("picture_url = ?");
+      params.push(picture_url);
     }
 
     if (fields.length === 0) {
@@ -124,7 +152,7 @@ export async function getUserById(user_id) {
     conn = await pool.getConnection();
     const rows = await conn.query(
       `
-      SELECT user_id, email, name, phone_number, age, gender, dateofbirth, job, created_at
+      SELECT user_id, email, name, phone_number, age, gender, dateofbirth, job, picture_url, created_at
       FROM users
       WHERE user_id = ?
       LIMIT 1
@@ -146,7 +174,7 @@ export async function searchUserByName(name, { limit = 20, offset = 0 } = {}) {
 
     const rows = await conn.query(
       `
-      SELECT user_id, email, name, phone_number, age, gender, dateofbirth, job, created_at
+      SELECT user_id, email, name, phone_number, age, gender, dateofbirth, job, picture_url, created_at
       FROM users
       WHERE name LIKE ?
       ORDER BY user_id DESC
@@ -156,6 +184,43 @@ export async function searchUserByName(name, { limit = 20, offset = 0 } = {}) {
     );
 
     return rows;
+  } finally {
+    if (conn) conn.release();
+  }
+}
+export async function getUserByEmail(email) {
+  let conn;
+  try {
+    conn = await pool.getConnection();
+    const rows = await conn.query(
+      `
+      SELECT user_id, email, name, phone_number, age, gender, dateofbirth, job, picture_url, created_at
+      FROM users
+      WHERE email = ?
+      LIMIT 1
+      `,
+      [email]
+    );
+    return rows[0] || null;
+  } finally {
+    if (conn) conn.release();
+  }
+}
+
+export async function getUserToLogin(email) {
+  let conn;
+  try {
+    conn = await pool.getConnection();
+    const rows = await conn.query(
+      `
+      SELECT user_id, email, password, name, phone_number, age, gender, dateofbirth, job, picture_url, created_at
+      FROM users
+      WHERE email = ?
+      LIMIT 1
+      `,
+      [email]
+    );
+    return rows[0] || null;
   } finally {
     if (conn) conn.release();
   }

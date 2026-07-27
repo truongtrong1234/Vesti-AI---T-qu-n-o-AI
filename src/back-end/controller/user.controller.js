@@ -3,6 +3,7 @@ import {
   updateUserService,
   changePasswordService,
   searchUserByNameService,
+  listUsersService,
   getUserByIdService
 } from "../service/user.service.js";
 
@@ -42,6 +43,29 @@ export async function searchUserByNameController(req, res) {
     const offset = req.query?.offset !== undefined ? Number(req.query.offset) : undefined;
 
     const rows = await searchUserByNameService(name, { limit, offset });
+    return res.json({ ok: true, data: rows });
+  } catch (err) {
+    return res.status(500).json({ ok: false, error: String(err?.message || err) });
+  }
+}
+
+export async function listUsersController(req, res) {
+  try {
+    const filters = {
+      user_id: req.query?.user_id,
+      email: req.query?.email,
+      name: req.query?.name,
+      phone_number: req.query?.phone_number,
+      age: req.query?.age,
+      gender: req.query?.gender,
+      job: req.query?.job,
+      dateofbirth: req.query?.dateofbirth
+    };
+
+    const limit = req.query?.limit !== undefined ? Number(req.query.limit) : undefined;
+    const offset = req.query?.offset !== undefined ? Number(req.query.offset) : undefined;
+
+    const rows = await listUsersService(filters, { limit, offset });
     return res.json({ ok: true, data: rows });
   } catch (err) {
     return res.status(500).json({ ok: false, error: String(err?.message || err) });

@@ -2,6 +2,8 @@ import "dotenv/config";
 import express from "express";
 import userRouter from "./router/user.router.js";
 import authRouter from "./router/auth.router.js";
+import clothingItemRouter from "./router/clothingItem.router.js";
+
 const app = express();
 
 app.use(express.json());
@@ -11,7 +13,7 @@ app.get("/health", (req, res) => res.json({ ok: true }));
 
 app.use("/api/auth", authRouter);
 app.use("/api/users", userRouter);
-
+app.use("/api/clothing-items", clothingItemRouter);
 app.use((err, req, res, next) => {
   console.error(err);
   res.status(500).json({ ok: false, error: "Internal Server Error" });

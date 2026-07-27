@@ -165,6 +165,53 @@ export async function getUserById(user_id) {
   }
 }
 
+export async function list({ filters = {}, limit = 20, offset = 0 } = {}) {
+  let conn;
+  try {
+    conn = await pool.getConnection();
+
+    const whereClauses = [];
+    const params = [];
+
+    const addClause = (field, value, operator = "=") => {
+      if (value === undefined || value === null || value === "") return;
+      whereClauses.push(`${field} ${operator} ?`);
+      params.push(value);
+    };
+
+    const addLikeClause = (field, value) => {
+      if (value === undefined || value === null || value === "") return;
+      whereClauses.push(`${field} LIKE ?`);
+      params.push(`%${String(value)}%`);
+    };
+
+    const f = filters || {};
+
+    addClause("user_id", f.user_id);
+    addClause("email", f.email ? String(f.email).trim().toLowerCase() : f.email);
+    addLikeClause("name", f.name);
+    addLikeClause("phone_number", f.phone_number);
+    addClause("age", f.age !== undefined && f.age !== null && f.age !== "" ? Number(f.age) : undefined);
+    addClause("gender", f.gender ? String(f.gender).trim() : f.gender);
+    addLikeClause("job", f.job);
+    addClause("dateofbirth", f.dateofbirth ? toDateOnly(f.dateofbirth) : f.dateofbirth);
+
+    const sql = `
+      SELECT user_id, email, name, phone_number, age, gender, dateofbirth, job, picture_url, created_at
+      FROM users
+      ${whereClauses.length > 0 ? `WHERE ${whereClauses.join(" AND ")}` : ""}
+      ORDER BY user_id DESC
+      LIMIT ? OFFSET ?
+    `;
+
+    const rows = await conn.query(sql, [...params, Number(limit ?? 20), Number(offset ?? 0)]);
+
+    return rows;
+  } finally {
+    if (conn) conn.release();
+  }
+}
+
 export async function searchUserByName(name, { limit = 20, offset = 0 } = {}) {
   let conn;
   try {

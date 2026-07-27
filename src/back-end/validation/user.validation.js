@@ -37,6 +37,20 @@ export const userValidate = {
   getById: () => {
     return [paramV.number('user_id', 1, 9007199254740991, true, 'User ID')];
   },
+  listUsers: () => {
+    return [
+      queryV.number('user_id', 1, 9007199254740991, false, 'User ID'),
+      queryV.string('email', 255, false, 'Email'),
+      queryV.string('name', 150, false, 'Name'),
+      queryV.string('phone_number', 30, false, 'Phone number'),
+      queryV.number('age', 0, 200, false, 'Age'),
+      queryV.string('gender', 20, false, 'Gender'),
+      queryV.string('job', 150, false, 'Job'),
+      queryV.string('dateofbirth', 10, false, 'Date of birth'),
+      queryV.number('limit', 1, 200, false, 'Limit'),
+      queryV.number('offset', 0, 1000000000, false, 'Offset')
+    ];
+  },
   searchByName: () => {
     return [
       queryV.string('name', 150, true, 'Name'),

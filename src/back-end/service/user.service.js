@@ -3,13 +3,15 @@ import {
   updateUser,
   changePassword,
   searchUserByName,
+  list,
   getUserById,
   getUserByEmail
 } from "../database/user.database.js";
 import bcrypt from "bcrypt";
 
+const SALT_ROUNDS = 10;
+
 export async function createUserService(payload) {
-  const SALT_ROUNDS = 10;
   const hashedPassword = await bcrypt.hash(String(payload.password), SALT_ROUNDS);
   const email = String(payload.email || "").trim().toLowerCase();
   const password = String(payload.password || "");
@@ -34,6 +36,10 @@ export async function changePasswordService(user_id, new_password) {
 
 export async function searchUserByNameService(name, options) {
   return await searchUserByName(name, options);
+}
+
+export async function listUsersService(filters = {}, options = {}) {
+  return await list({ filters, limit: options?.limit, offset: options?.offset });
 }
 
 export async function getUserByIdService(user_id) {

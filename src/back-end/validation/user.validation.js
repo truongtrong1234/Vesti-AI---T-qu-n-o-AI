@@ -12,7 +12,24 @@ export const userValidate = {
       bodyV.number('age', 0, 200, false, 'Age'),
       bodyV.string('gender', 20, false, v => (typeof v === 'string' ? v.trim() : v), 'Gender'),
       bodyV.string('job', 150, false, v => (typeof v === 'string' ? v.trim() : v), 'Job'),
-      bodyV.string('dateofbirth', 10, false, v => (typeof v === 'string' ? v.trim() : v), 'Date of birth')
+      bodyV.string('dateofbirth', 10, false, v => (typeof v === 'string' ? v.trim() : v), 'Date of birth'),
+
+      // profile fields (optional)
+      bodyV.number('height_cm', 50, 250, false, 'Height (cm)'),
+      bodyV.number('weight_kg', 10, 400, false, 'Weight (kg)'),
+
+      bodyV.number('bust_cm', 40, 200, false, 'Bust (cm)'),
+      bodyV.number('waist_cm', 30, 200, false, 'Waist (cm)'),
+      bodyV.number('hip_cm', 40, 250, false, 'Hip (cm)'),
+
+      bodyV.string('favorite_style', 80, false, v => (typeof v === 'string' ? v.trim() : v), 'Favorite style'),
+      bodyV.string('preferred_color_tone', 80, false, v => (typeof v === 'string' ? v.trim() : v), 'Preferred color tone'),
+
+      bodyV.string('body_shape', 50, false, v => (typeof v === 'string' ? v.trim() : v), 'Body shape'),
+      bodyV.string('usual_size', 30, false, v => (typeof v === 'string' ? v.trim() : v), 'Usual size'),
+
+      bodyV.number('fashion_budget_min', 0, 2000000000, false, 'Fashion budget min'),
+      bodyV.number('fashion_budget_max', 0, 2000000000, false, 'Fashion budget max')
     ];
   },
 
@@ -25,18 +42,38 @@ export const userValidate = {
       bodyV.number('age', 0, 200, false, 'Age'),
       bodyV.string('gender', 20, false, v => (typeof v === 'string' ? v.trim() : v), 'Gender'),
       bodyV.string('job', 150, false, v => (typeof v === 'string' ? v.trim() : v), 'Job'),
-      bodyV.string('dateofbirth', 10, false, v => (typeof v === 'string' ? v.trim() : v), 'Date of birth')
+      bodyV.string('dateofbirth', 10, false, v => (typeof v === 'string' ? v.trim() : v), 'Date of birth'),
+
+      // profile fields (optional)
+      bodyV.number('height_cm', 50, 250, false, 'Height (cm)'),
+      bodyV.number('weight_kg', 10, 400, false, 'Weight (kg)'),
+
+      bodyV.number('bust_cm', 40, 200, false, 'Bust (cm)'),
+      bodyV.number('waist_cm', 30, 200, false, 'Waist (cm)'),
+      bodyV.number('hip_cm', 40, 250, false, 'Hip (cm)'),
+
+      bodyV.string('favorite_style', 80, false, v => (typeof v === 'string' ? v.trim() : v), 'Favorite style'),
+      bodyV.string('preferred_color_tone', 80, false, v => (typeof v === 'string' ? v.trim() : v), 'Preferred color tone'),
+
+      bodyV.string('body_shape', 50, false, v => (typeof v === 'string' ? v.trim() : v), 'Body shape'),
+      bodyV.string('usual_size', 30, false, v => (typeof v === 'string' ? v.trim() : v), 'Usual size'),
+
+      bodyV.number('fashion_budget_min', 0, 2000000000, false, 'Fashion budget min'),
+      bodyV.number('fashion_budget_max', 0, 2000000000, false, 'Fashion budget max')
     ];
   },
+
   changePassword: () => {
     return [
       paramV.number('user_id', 1, 9007199254740991, true, 'User ID'),
       bodyV.string('new_password', 255, true, null, 'New password')
     ];
   },
+
   getById: () => {
     return [paramV.number('user_id', 1, 9007199254740991, true, 'User ID')];
   },
+
   listUsers: () => {
     return [
       queryV.number('user_id', 1, 9007199254740991, false, 'User ID'),
@@ -51,6 +88,7 @@ export const userValidate = {
       queryV.number('offset', 0, 1000000000, false, 'Offset')
     ];
   },
+
   searchByName: () => {
     return [
       queryV.string('name', 150, true, 'Name'),

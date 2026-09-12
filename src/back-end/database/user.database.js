@@ -21,7 +21,19 @@ export async function createUser({
   gender = null,
   dateofbirth = null,
   job = null,
-  picture_url = null
+  picture_url = null,
+
+  height_cm = null,
+  weight_kg = null,
+  bust_cm = null,
+  waist_cm = null,
+  hip_cm = null,
+  favorite_style = null,
+  preferred_color_tone = null,
+  body_shape = null,
+  usual_size = null,
+  fashion_budget_min = null,
+  fashion_budget_max = null
 }) {
   let conn;
   try {
@@ -29,8 +41,13 @@ export async function createUser({
 
     const res = await conn.query(
       `
-      INSERT INTO users (email, password, name, phone_number, age, gender, dateofbirth, job, picture_url)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO users (
+        email, password, name, phone_number, age, gender, dateofbirth, job, picture_url,
+        height_cm, weight_kg, bust_cm, waist_cm, hip_cm,
+        favorite_style, preferred_color_tone, body_shape, usual_size,
+        fashion_budget_min, fashion_budget_max
+      )
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `,
       [
         email,
@@ -41,7 +58,21 @@ export async function createUser({
         gender,
         toDateOnly(dateofbirth),
         job,
-        picture_url
+        picture_url,
+
+        height_cm === null || height_cm === undefined ? null : Number(height_cm),
+        weight_kg === null || weight_kg === undefined ? null : Number(weight_kg),
+        bust_cm === null || bust_cm === undefined ? null : Number(bust_cm),
+        waist_cm === null || waist_cm === undefined ? null : Number(waist_cm),
+        hip_cm === null || hip_cm === undefined ? null : Number(hip_cm),
+
+        favorite_style,
+        preferred_color_tone,
+        body_shape,
+        usual_size,
+
+        fashion_budget_min === null || fashion_budget_min === undefined ? null : Number(fashion_budget_min),
+        fashion_budget_max === null || fashion_budget_max === undefined ? null : Number(fashion_budget_max)
       ]
     );
 
@@ -54,7 +85,19 @@ export async function createUser({
       gender,
       dateofbirth: toDateOnly(dateofbirth),
       job,
-      picture_url
+      picture_url,
+
+      height_cm: height_cm === null || height_cm === undefined ? null : Number(height_cm),
+      weight_kg: weight_kg === null || weight_kg === undefined ? null : Number(weight_kg),
+      bust_cm: bust_cm === null || bust_cm === undefined ? null : Number(bust_cm),
+      waist_cm: waist_cm === null || waist_cm === undefined ? null : Number(waist_cm),
+      hip_cm: hip_cm === null || hip_cm === undefined ? null : Number(hip_cm),
+      favorite_style,
+      preferred_color_tone,
+      body_shape,
+      usual_size,
+      fashion_budget_min: fashion_budget_min === null || fashion_budget_min === undefined ? null : Number(fashion_budget_min),
+      fashion_budget_max: fashion_budget_max === null || fashion_budget_max === undefined ? null : Number(fashion_budget_max)
     };
   } finally {
     if (conn) conn.release();
@@ -63,7 +106,28 @@ export async function createUser({
 
 export async function updateUser(
   user_id,
-  { email, name, phone_number, age, gender, dateofbirth, job, picture_url }
+  {
+    email,
+    name,
+    phone_number,
+    age,
+    gender,
+    dateofbirth,
+    job,
+    picture_url,
+
+    height_cm,
+    weight_kg,
+    bust_cm,
+    waist_cm,
+    hip_cm,
+    favorite_style,
+    preferred_color_tone,
+    body_shape,
+    usual_size,
+    fashion_budget_min,
+    fashion_budget_max
+  }
 ) {
   let conn;
   try {
@@ -103,6 +167,52 @@ export async function updateUser(
     if (picture_url !== undefined) {
       fields.push("picture_url = ?");
       params.push(picture_url);
+    }
+
+    // profile fields
+    if (height_cm !== undefined) {
+      fields.push("height_cm = ?");
+      params.push(height_cm === null ? null : Number(height_cm));
+    }
+    if (weight_kg !== undefined) {
+      fields.push("weight_kg = ?");
+      params.push(weight_kg === null ? null : Number(weight_kg));
+    }
+    if (bust_cm !== undefined) {
+      fields.push("bust_cm = ?");
+      params.push(bust_cm === null ? null : Number(bust_cm));
+    }
+    if (waist_cm !== undefined) {
+      fields.push("waist_cm = ?");
+      params.push(waist_cm === null ? null : Number(waist_cm));
+    }
+    if (hip_cm !== undefined) {
+      fields.push("hip_cm = ?");
+      params.push(hip_cm === null ? null : Number(hip_cm));
+    }
+    if (favorite_style !== undefined) {
+      fields.push("favorite_style = ?");
+      params.push(favorite_style);
+    }
+    if (preferred_color_tone !== undefined) {
+      fields.push("preferred_color_tone = ?");
+      params.push(preferred_color_tone);
+    }
+    if (body_shape !== undefined) {
+      fields.push("body_shape = ?");
+      params.push(body_shape);
+    }
+    if (usual_size !== undefined) {
+      fields.push("usual_size = ?");
+      params.push(usual_size);
+    }
+    if (fashion_budget_min !== undefined) {
+      fields.push("fashion_budget_min = ?");
+      params.push(fashion_budget_min === null ? null : Number(fashion_budget_min));
+    }
+    if (fashion_budget_max !== undefined) {
+      fields.push("fashion_budget_max = ?");
+      params.push(fashion_budget_max === null ? null : Number(fashion_budget_max));
     }
 
     if (fields.length === 0) {
@@ -152,7 +262,14 @@ export async function getUserById(user_id) {
     conn = await pool.getConnection();
     const rows = await conn.query(
       `
-      SELECT user_id, email, name, phone_number, age, gender, dateofbirth, job, picture_url, created_at
+      SELECT
+        user_id, email, name, phone_number, age, gender, dateofbirth, job, picture_url, created_at,
+
+        height_cm, weight_kg,
+        bust_cm, waist_cm, hip_cm,
+        favorite_style, preferred_color_tone,
+        body_shape, usual_size,
+        fashion_budget_min, fashion_budget_max
       FROM users
       WHERE user_id = ?
       LIMIT 1

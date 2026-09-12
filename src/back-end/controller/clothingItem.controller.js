@@ -15,7 +15,7 @@ import {
 
 export async function createClothingItemController(req, res) {
   try {
-    const data = await createClothingItemService(req.body);
+    const data = await createClothingItemService(req.user, req.body);
     return Success(res, data);
   } catch (err) {
     return InternalServerError(res, err?.message);
@@ -63,7 +63,6 @@ export async function deleteClothingItemController(req, res) {
     return InternalServerError(res, err?.message);
   }
 }
-
 export async function listClothingItemsController(req, res) {
   try {
     const filters = {

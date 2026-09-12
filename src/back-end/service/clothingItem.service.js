@@ -7,8 +7,12 @@ import {
   countClothingItems
 } from "../database/clothingItem.database.js";
 
-export async function createClothingItemService(payload) {
-  return await createClothingItem(payload);
+export async function createClothingItemService(user, payload) {
+  const userId = user?.id ?? user?.user_id;
+  return await createClothingItem({
+    ...payload,
+    user_id: Number(userId)
+  });
 }
 
 export async function getClothingItemByIdService(item_id) {

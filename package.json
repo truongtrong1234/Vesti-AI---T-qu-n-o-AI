@@ -8,6 +8,7 @@
     "start": "node src/back-end/index.js"
   },
   "dependencies": {
+    "@langchain/openai": "^1.5.13",
     "bcrypt": "^6.0.0",
     "dotenv": "^16.6.1",
     "express": "^5.1.0",

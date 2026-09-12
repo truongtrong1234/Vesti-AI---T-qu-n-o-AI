@@ -7,17 +7,13 @@ const BIGINT_MAX = 9007199254740991;
 export const clothingItemsValidate = {
   create: () => {
     return [
-      bodyV.number("user_id", 1, BIGINT_MAX, true, "User ID"),
       bodyV.string("name", 150, true, v => (typeof v === "string" ? v.trim() : v), "Name"),
       bodyV.number("category_id", 1, BIGINT_MAX, true, "Category ID"),
-
       bodyV.string("brand", 80, false, v => (typeof v === "string" ? v.trim() : v), "Brand"),
       bodyV.string("color", 50, false, v => (typeof v === "string" ? v.trim() : v), "Color"),
       bodyV.number("size_id", 1, BIGINT_MAX, false, "Size ID"),
-
       bodyV.string("image_url", 65535, false, v => (typeof v === "string" ? v.trim() : v), "Image URL"),
       bodyV.string("notes", 65535, false, v => (typeof v === "string" ? v.trim() : v), "Notes"),
-
       bodyV.bool("is_active", false, "Is active")
     ];
   },

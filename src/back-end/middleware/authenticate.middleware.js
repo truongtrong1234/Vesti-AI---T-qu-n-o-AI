@@ -37,7 +37,10 @@ export const authenticate = (req, res, next) => {
     const userId = decoded?.user_id;
     if (!userId) return Unauthorized(res, "Invalid token: missing user_id");
 
-    req.user = { user_id: Number(userId) };
+    req.user = {
+      id: Number(userId),
+      user_id: Number(userId)
+    };
     return next();
   } catch (err) {
     if (err?.name === "TokenExpiredError") return Unauthorized(res, "Token expired");

@@ -6,6 +6,13 @@ import { suggestOutfitAIController } from "../controller/aiSuggest.controller.js
 
 const router = express.Router();
 
-router.post("/outfit", authenticate, aiSuggestValidate.suggestOutfit(), validate, suggestOutfitAIController);
+// POST /ai/suggest-outfit
+router.post(
+  "/suggest-outfit",
+  authenticate,
+  aiSuggestValidate.suggestOutfit(),
+  validate,
+  suggestOutfitAIController
+);
 
 export default router;

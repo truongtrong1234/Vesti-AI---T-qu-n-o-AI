@@ -12,6 +12,26 @@ function toDateOnly(value) {
   return null;
 }
 
+// Convert toàn bộ BigInt trong kết quả query sang Number (hoặc string nếu bạn muốn an toàn tuyệt đối).
+// Ở đây mình dùng Number, giả sử id của bạn không vượt quá Number.MAX_SAFE_INTEGER.
+function normalizeRow(row) {
+  if (!row || typeof row !== "object") return row;
+  const out = {};
+  for (const [key, value] of Object.entries(row)) {
+    if (typeof value === "bigint") {
+      out[key] = Number(value); // hoặc String(value)
+    } else {
+      out[key] = value;
+    }
+  }
+  return out;
+}
+
+function normalizeRows(rows) {
+  if (!Array.isArray(rows)) return rows;
+  return rows.map(normalizeRow);
+}
+
 export async function createUser({
   email,
   password,
@@ -39,45 +59,62 @@ export async function createUser({
   try {
     conn = await pool.getConnection();
 
+    const hasBudgetMin = fashion_budget_min !== null && fashion_budget_min !== undefined;
+    const hasBudgetMax = fashion_budget_max !== null && fashion_budget_max !== undefined;
+
+    if (hasBudgetMin !== hasBudgetMax) {
+      throw new Error("BUDGET_MIN_MAX_MUST_BE_BOTH_NULL_OR_BOTH_SET");
+    }
+
+    const columns = [
+      "email", "password", "name", "phone_number", "age", "gender", "dateofbirth", "job", "picture_url",
+      "height_cm", "weight_kg", "bust_cm", "waist_cm", "hip_cm",
+      "favorite_style", "preferred_color_tone", "body_shape", "usual_size"
+    ];
+
+    const params = [
+      email,
+      password,
+      name,
+      phone_number,
+      age,
+      gender,
+      toDateOnly(dateofbirth),
+      job,
+      picture_url,
+
+      height_cm === null || height_cm === undefined ? null : Number(height_cm),
+      weight_kg === null || weight_kg === undefined ? null : Number(weight_kg),
+      bust_cm === null || bust_cm === undefined ? null : Number(bust_cm),
+      waist_cm === null || waist_cm === undefined ? null : Number(waist_cm),
+      hip_cm === null || hip_cm === undefined ? null : Number(hip_cm),
+
+      favorite_style,
+      preferred_color_tone,
+      body_shape,
+      usual_size
+    ];
+
+    if (hasBudgetMin && hasBudgetMax) {
+      columns.push("fashion_budget_min", "fashion_budget_max");
+      params.push(Number(fashion_budget_min), Number(fashion_budget_max));
+    }
+
+    const placeholders = columns.map(() => "?").join(", ");
+
     const res = await conn.query(
       `
-      INSERT INTO users (
-        email, password, name, phone_number, age, gender, dateofbirth, job, picture_url,
-        height_cm, weight_kg, bust_cm, waist_cm, hip_cm,
-        favorite_style, preferred_color_tone, body_shape, usual_size,
-        fashion_budget_min, fashion_budget_max
-      )
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO users (${columns.join(", ")})
+      VALUES (${placeholders})
       `,
-      [
-        email,
-        password,
-        name,
-        phone_number,
-        age,
-        gender,
-        toDateOnly(dateofbirth),
-        job,
-        picture_url,
-
-        height_cm === null || height_cm === undefined ? null : Number(height_cm),
-        weight_kg === null || weight_kg === undefined ? null : Number(weight_kg),
-        bust_cm === null || bust_cm === undefined ? null : Number(bust_cm),
-        waist_cm === null || waist_cm === undefined ? null : Number(waist_cm),
-        hip_cm === null || hip_cm === undefined ? null : Number(hip_cm),
-
-        favorite_style,
-        preferred_color_tone,
-        body_shape,
-        usual_size,
-
-        fashion_budget_min === null || fashion_budget_min === undefined ? null : Number(fashion_budget_min),
-        fashion_budget_max === null || fashion_budget_max === undefined ? null : Number(fashion_budget_max)
-      ]
+      params
     );
 
+    // insertId từ mariadb có thể là BigInt -> ép sang Number luôn tại đây
+    const user_id = Number(res.insertId);
+
     return {
-      user_id: Number(res.insertId),
+      user_id,
       email,
       name,
       phone_number,
@@ -96,8 +133,8 @@ export async function createUser({
       preferred_color_tone,
       body_shape,
       usual_size,
-      fashion_budget_min: fashion_budget_min === null || fashion_budget_min === undefined ? null : Number(fashion_budget_min),
-      fashion_budget_max: fashion_budget_max === null || fashion_budget_max === undefined ? null : Number(fashion_budget_max)
+      fashion_budget_min: hasBudgetMin ? Number(fashion_budget_min) : null,
+      fashion_budget_max: hasBudgetMax ? Number(fashion_budget_max) : null
     };
   } finally {
     if (conn) conn.release();
@@ -276,7 +313,8 @@ export async function getUserById(user_id) {
       `,
       [user_id]
     );
-    return rows[0] || null;
+    const normalized = normalizeRows(rows);
+    return normalized[0] || null; // luôn trả ra 1 obj hoặc null
   } finally {
     if (conn) conn.release();
   }
@@ -322,8 +360,7 @@ export async function list({ filters = {}, limit = 20, offset = 0 } = {}) {
     `;
 
     const rows = await conn.query(sql, [...params, Number(limit ?? 20), Number(offset ?? 0)]);
-
-    return rows;
+    return normalizeRows(rows);
   } finally {
     if (conn) conn.release();
   }
@@ -347,11 +384,12 @@ export async function searchUserByName(name, { limit = 20, offset = 0 } = {}) {
       [keyword, Number(limit), Number(offset)]
     );
 
-    return rows;
+    return normalizeRows(rows);
   } finally {
     if (conn) conn.release();
   }
 }
+
 export async function getUserByEmail(email) {
   let conn;
   try {
@@ -365,7 +403,8 @@ export async function getUserByEmail(email) {
       `,
       [email]
     );
-    return rows[0] || null;
+    const normalized = normalizeRows(rows);
+    return normalized[0] || null;
   } finally {
     if (conn) conn.release();
   }
@@ -384,7 +423,8 @@ export async function getUserToLogin(email) {
       `,
       [email]
     );
-    return rows[0] || null;
+    const normalized = normalizeRows(rows);
+    return normalized[0] || null;
   } finally {
     if (conn) conn.release();
   }

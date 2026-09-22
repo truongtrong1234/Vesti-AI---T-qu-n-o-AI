@@ -8,10 +8,19 @@ export const clothingItemsValidate = {
   create: () => {
     return [
       bodyV.string("name", 150, true, v => (typeof v === "string" ? v.trim() : v), "Name"),
-      bodyV.number("category_id", 1, BIGINT_MAX, true, "Category ID"),
+
+      bodyV.string("main_category", 100, false, v => (typeof v === "string" ? v.trim() : v), "Main category"),
+      bodyV.string("category", 100, false, v => (typeof v === "string" ? v.trim() : v), "Category"),
+      bodyV.string("type", 100, false, v => (typeof v === "string" ? v.trim() : v), "Type"),
+      bodyV.string("gender", 50, false, v => (typeof v === "string" ? v.trim() : v), "Gender"),
+      bodyV.string("event", 100, false, v => (typeof v === "string" ? v.trim() : v), "Event"),
+      bodyV.string("seasons", 100, false, v => (typeof v === "string" ? v.trim() : v), "Seasons"),
+      bodyV.string("material", 100, false, v => (typeof v === "string" ? v.trim() : v), "Material"),
+      bodyV.string("size", 20, false, v => (typeof v === "string" ? v.trim() : v), "Size"),
+
       bodyV.string("brand", 80, false, v => (typeof v === "string" ? v.trim() : v), "Brand"),
       bodyV.string("color", 50, false, v => (typeof v === "string" ? v.trim() : v), "Color"),
-      bodyV.number("size_id", 1, BIGINT_MAX, false, "Size ID"),
+
       bodyV.string("image_url", 65535, false, v => (typeof v === "string" ? v.trim() : v), "Image URL"),
       bodyV.string("notes", 65535, false, v => (typeof v === "string" ? v.trim() : v), "Notes"),
       bodyV.bool("is_active", false, "Is active")
@@ -24,11 +33,18 @@ export const clothingItemsValidate = {
 
       bodyV.number("user_id", 1, BIGINT_MAX, false, "User ID"),
       bodyV.string("name", 150, false, v => (typeof v === "string" ? v.trim() : v), "Name"),
-      bodyV.number("category_id", 1, BIGINT_MAX, false, "Category ID"),
+
+      bodyV.string("main_category", 100, false, v => (typeof v === "string" ? v.trim() : v), "Main category"),
+      bodyV.string("category", 100, false, v => (typeof v === "string" ? v.trim() : v), "Category"),
+      bodyV.string("type", 100, false, v => (typeof v === "string" ? v.trim() : v), "Type"),
+      bodyV.string("gender", 50, false, v => (typeof v === "string" ? v.trim() : v), "Gender"),
+      bodyV.string("event", 100, false, v => (typeof v === "string" ? v.trim() : v), "Event"),
+      bodyV.string("seasons", 100, false, v => (typeof v === "string" ? v.trim() : v), "Seasons"),
+      bodyV.string("material", 100, false, v => (typeof v === "string" ? v.trim() : v), "Material"),
+      bodyV.string("size", 20, false, v => (typeof v === "string" ? v.trim() : v), "Size"),
 
       bodyV.string("brand", 80, false, v => (typeof v === "string" ? v.trim() : v), "Brand"),
       bodyV.string("color", 50, false, v => (typeof v === "string" ? v.trim() : v), "Color"),
-      bodyV.number("size_id", 1, BIGINT_MAX, false, "Size ID"),
 
       bodyV.string("image_url", 65535, false, v => (typeof v === "string" ? v.trim() : v), "Image URL"),
       bodyV.string("notes", 65535, false, v => (typeof v === "string" ? v.trim() : v), "Notes"),
@@ -49,13 +65,20 @@ export const clothingItemsValidate = {
     return [
       queryV.number("item_id", 1, BIGINT_MAX, false, "Item ID"),
       queryV.number("user_id", 1, BIGINT_MAX, false, "User ID"),
-      queryV.number("category_id", 1, BIGINT_MAX, false, "Category ID"),
-      queryV.number("size_id", 1, BIGINT_MAX, false, "Size ID"),
       queryV.number("is_active", 0, 1, false, "Is active"),
 
       queryV.string("name", 150, false, "Name"),
       queryV.string("brand", 80, false, "Brand"),
       queryV.string("color", 50, false, "Color"),
+
+      queryV.string("main_category", 100, false, "Main category"),
+      queryV.string("category", 100, false, "Category"),
+      queryV.string("type", 100, false, "Type"),
+      queryV.string("gender", 50, false, "Gender"),
+      queryV.string("event", 100, false, "Event"),
+      queryV.string("seasons", 100, false, "Seasons"),
+      queryV.string("material", 100, false, "Material"),
+      queryV.string("size", 20, false, "Size"),
 
       queryV.number("limit", 1, 200, false, "Limit"),
       queryV.number("offset", 0, 1000000000, false, "Offset"),

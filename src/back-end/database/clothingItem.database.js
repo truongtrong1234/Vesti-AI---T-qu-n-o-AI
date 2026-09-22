@@ -7,13 +7,20 @@ function normalizeString(v) {
   return s === "" ? null : s;
 }
 
+// ... existing code ...
 export async function createClothingItem({
   user_id,
   name,
-  category_id,
+  main_category = null,
+  category = null,
+  type = null,
+  gender = null,
+  event = null,
+  seasons = null,
+  material = null,
+  size = null,
   brand = null,
   color = null,
-  size_id = null,
   image_url = null,
   notes = null,
   is_active = 1
@@ -25,17 +32,23 @@ export async function createClothingItem({
     const res = await conn.query(
       `
       INSERT INTO clothing_items
-        (user_id, name, category_id, brand, color, size_id, image_url, notes, is_active)
+        (user_id, name, main_category, category, type, gender, event, seasons, material, size, brand, color, image_url, notes, is_active)
       VALUES
-        (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `,
       [
         Number(user_id),
         String(name),
-        Number(category_id),
+        normalizeString(main_category),
+        normalizeString(category),
+        normalizeString(type),
+        normalizeString(gender),
+        normalizeString(event),
+        normalizeString(seasons),
+        normalizeString(material),
+        normalizeString(size),
         normalizeString(brand),
         normalizeString(color),
-        size_id === undefined ? null : size_id === null ? null : Number(size_id),
         image_url === undefined ? null : image_url === null ? null : String(image_url),
         notes === undefined ? null : notes === null ? null : String(notes),
         is_active === undefined || is_active === null ? 1 : Number(is_active) ? 1 : 0
@@ -46,10 +59,16 @@ export async function createClothingItem({
       item_id: Number(res.insertId),
       user_id: Number(user_id),
       name: String(name),
-      category_id: Number(category_id),
+      main_category: normalizeString(main_category),
+      category: normalizeString(category),
+      type: normalizeString(type),
+      gender: normalizeString(gender),
+      event: normalizeString(event),
+      seasons: normalizeString(seasons),
+      material: normalizeString(material),
+      size: normalizeString(size),
       brand: normalizeString(brand),
       color: normalizeString(color),
-      size_id: size_id === undefined ? null : size_id === null ? null : Number(size_id),
       image_url: image_url === undefined ? null : image_url === null ? null : String(image_url),
       notes: notes === undefined ? null : notes === null ? null : String(notes),
       is_active: is_active === undefined || is_active === null ? 1 : Number(is_active) ? 1 : 0
@@ -59,6 +78,7 @@ export async function createClothingItem({
   }
 }
 
+// ... existing code ...
 export async function getClothingItemById(item_id) {
   let conn;
   try {
@@ -66,8 +86,9 @@ export async function getClothingItemById(item_id) {
     const rows = await conn.query(
       `
       SELECT
-        item_id, user_id, name, category_id, brand, color, size_id,
-        image_url, notes, is_active, created_at, updated_at
+        item_id, user_id, name,
+        main_category, category, type, gender, event, seasons, material, size,
+        brand, color, image_url, notes, is_active, created_at, updated_at
       FROM clothing_items
       WHERE item_id = ?
       LIMIT 1
@@ -80,9 +101,26 @@ export async function getClothingItemById(item_id) {
   }
 }
 
+// ... existing code ...
 export async function updateClothingItem(
   item_id,
-  { user_id, name, category_id, brand, color, size_id, image_url, notes, is_active }
+  {
+    user_id,
+    name,
+    main_category,
+    category,
+    type,
+    gender,
+    event,
+    seasons,
+    material,
+    size,
+    brand,
+    color,
+    image_url,
+    notes,
+    is_active
+  }
 ) {
   let conn;
   try {
@@ -99,9 +137,37 @@ export async function updateClothingItem(
       fields.push("name = ?");
       params.push(String(name));
     }
-    if (category_id !== undefined) {
-      fields.push("category_id = ?");
-      params.push(Number(category_id));
+    if (main_category !== undefined) {
+      fields.push("main_category = ?");
+      params.push(normalizeString(main_category));
+    }
+    if (category !== undefined) {
+      fields.push("category = ?");
+      params.push(normalizeString(category));
+    }
+    if (type !== undefined) {
+      fields.push("type = ?");
+      params.push(normalizeString(type));
+    }
+    if (gender !== undefined) {
+      fields.push("gender = ?");
+      params.push(normalizeString(gender));
+    }
+    if (event !== undefined) {
+      fields.push("event = ?");
+      params.push(normalizeString(event));
+    }
+    if (seasons !== undefined) {
+      fields.push("seasons = ?");
+      params.push(normalizeString(seasons));
+    }
+    if (material !== undefined) {
+      fields.push("material = ?");
+      params.push(normalizeString(material));
+    }
+    if (size !== undefined) {
+      fields.push("size = ?");
+      params.push(normalizeString(size));
     }
     if (brand !== undefined) {
       fields.push("brand = ?");
@@ -110,10 +176,6 @@ export async function updateClothingItem(
     if (color !== undefined) {
       fields.push("color = ?");
       params.push(normalizeString(color));
-    }
-    if (size_id !== undefined) {
-      fields.push("size_id = ?");
-      params.push(size_id === null ? null : Number(size_id));
     }
     if (image_url !== undefined) {
       fields.push("image_url = ?");
@@ -149,6 +211,7 @@ export async function updateClothingItem(
   }
 }
 
+// ... existing code ...
 export async function deleteClothingItem(item_id) {
   let conn;
   try {
@@ -167,13 +230,14 @@ export async function deleteClothingItem(item_id) {
 }
 
 /**
- * List + filter + pagination
- * filters hỗ trợ:
- * - item_id, user_id, category_id, size_id, is_active
- * - name (LIKE), brand (LIKE), color (LIKE)
+ * List + filter + pagination theo schema mới
+ * Hỗ trợ lọc:
+ * - item_id, user_id, is_active (so sánh =)
+ * - name, brand, color, main_category, category, type, gender, event, seasons, material, size (LIKE)
  *
  * options: { limit=20, offset=0, orderBy="item_id", orderDir="DESC" }
  */
+// ... existing code ...
 export async function listClothingItems({ filters = {}, limit = 20, offset = 0, orderBy = "item_id", orderDir = "DESC" } = {}) {
   let conn;
   try {
@@ -198,13 +262,19 @@ export async function listClothingItems({ filters = {}, limit = 20, offset = 0, 
 
     addClause("item_id", f.item_id !== undefined ? Number(f.item_id) : undefined);
     addClause("user_id", f.user_id !== undefined ? Number(f.user_id) : undefined);
-    addClause("category_id", f.category_id !== undefined ? Number(f.category_id) : undefined);
-    addClause("size_id", f.size_id !== undefined && f.size_id !== null && f.size_id !== "" ? Number(f.size_id) : f.size_id === null ? null : undefined);
     addClause("is_active", f.is_active !== undefined ? (Number(f.is_active) ? 1 : 0) : undefined);
 
     addLikeClause("name", f.name);
     addLikeClause("brand", f.brand);
     addLikeClause("color", f.color);
+    addLikeClause("main_category", f.main_category);
+    addLikeClause("category", f.category);
+    addLikeClause("type", f.type);
+    addLikeClause("gender", f.gender);
+    addLikeClause("event", f.event);
+    addLikeClause("seasons", f.seasons);
+    addLikeClause("material", f.material);
+    addLikeClause("size", f.size);
 
     const allowedOrderBy = new Set(["item_id", "created_at", "updated_at", "name"]);
     const safeOrderBy = allowedOrderBy.has(orderBy) ? orderBy : "item_id";
@@ -212,8 +282,9 @@ export async function listClothingItems({ filters = {}, limit = 20, offset = 0, 
 
     const sql = `
       SELECT
-        item_id, user_id, name, category_id, brand, color, size_id,
-        image_url, notes, is_active, created_at, updated_at
+        item_id, user_id, name,
+        main_category, category, type, gender, event, seasons, material, size,
+        brand, color, image_url, notes, is_active, created_at, updated_at
       FROM clothing_items
       ${whereClauses.length > 0 ? `WHERE ${whereClauses.join(" AND ")}` : ""}
       ORDER BY ${safeOrderBy} ${safeOrderDir}
@@ -228,8 +299,9 @@ export async function listClothingItems({ filters = {}, limit = 20, offset = 0, 
 }
 
 /**
- * Optional: trả về total để làm pagination (nếu bạn cần)
+ * Đếm tổng số bản ghi theo filters (phục vụ pagination)
  */
+// ... existing code ...
 export async function countClothingItems({ filters = {} } = {}) {
   let conn;
   try {
@@ -254,13 +326,19 @@ export async function countClothingItems({ filters = {} } = {}) {
 
     addClause("item_id", f.item_id !== undefined ? Number(f.item_id) : undefined);
     addClause("user_id", f.user_id !== undefined ? Number(f.user_id) : undefined);
-    addClause("category_id", f.category_id !== undefined ? Number(f.category_id) : undefined);
-    addClause("size_id", f.size_id !== undefined && f.size_id !== null && f.size_id !== "" ? Number(f.size_id) : f.size_id === null ? null : undefined);
     addClause("is_active", f.is_active !== undefined ? (Number(f.is_active) ? 1 : 0) : undefined);
 
     addLikeClause("name", f.name);
     addLikeClause("brand", f.brand);
     addLikeClause("color", f.color);
+    addLikeClause("main_category", f.main_category);
+    addLikeClause("category", f.category);
+    addLikeClause("type", f.type);
+    addLikeClause("gender", f.gender);
+    addLikeClause("event", f.event);
+    addLikeClause("seasons", f.seasons);
+    addLikeClause("material", f.material);
+    addLikeClause("size", f.size);
 
     const rows = await conn.query(
       `

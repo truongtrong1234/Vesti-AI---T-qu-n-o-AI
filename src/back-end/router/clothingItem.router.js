@@ -10,6 +10,8 @@ import {
 } from "../controller/clothingItem.controller.js";
 
 import { clothingItemsValidate } from "../validation/clothingItem.validation.js";
+import { uploadImage } from "../middleware/upload.middleware.js";
+import { uploadClothingItemImageController } from "../controller/upload.controller.js";
 
 const router = express.Router();
 
@@ -18,6 +20,13 @@ router.get("/", authenticate, clothingItemsValidate.list(), validate, listClothi
 
 // CREATE
 router.post("/", authenticate, clothingItemsValidate.create(), validate, createClothingItemController);
+
+router.post(
+  "/:item_id/image",
+  authenticate,
+  uploadImage.single("image"),
+  uploadClothingItemImageController
+);
 
 // GET BY ID
 router.get("/:item_id", authenticate, clothingItemsValidate.getById(), validate, getClothingItemByIdController);

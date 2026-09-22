@@ -7,32 +7,35 @@ import {
 } from "../service/clothingItem.service.js";
 
 import {
-  Success,
+  SuccessSafe,
   BadRequest,
   NotFound,
   InternalServerError
 } from "../utils/responseHandler.utils.js";
 
+// ... existing code ...
 export async function createClothingItemController(req, res) {
   try {
     const data = await createClothingItemService(req.user, req.body);
-    return Success(res, data);
+    return SuccessSafe(res, data);
   } catch (err) {
     return InternalServerError(res, err?.message);
   }
 }
 
+// ... existing code ...
 export async function getClothingItemByIdController(req, res) {
   try {
     const item_id = Number(req.params.item_id);
     const row = await getClothingItemByIdService(item_id);
     if (!row) return NotFound(res, "Clothing item not found");
-    return Success(res, row);
+    return SuccessSafe(res, row);
   } catch (err) {
     return InternalServerError(res, err?.message);
   }
 }
 
+// ... existing code ...
 export async function updateClothingItemController(req, res) {
   try {
     const item_id = Number(req.params.item_id);
@@ -43,12 +46,13 @@ export async function updateClothingItemController(req, res) {
       return NotFound(res, "Clothing item not found or nothing to update");
     }
 
-    return Success(res, result);
+    return SuccessSafe(res, result);
   } catch (err) {
     return InternalServerError(res, err?.message);
   }
 }
 
+// ... existing code ...
 export async function deleteClothingItemController(req, res) {
   try {
     const item_id = Number(req.params.item_id);
@@ -58,22 +62,34 @@ export async function deleteClothingItemController(req, res) {
       return NotFound(res, "Clothing item not found");
     }
 
-    return Success(res, result);
+    return SuccessSafe(res, result);
   } catch (err) {
     return InternalServerError(res, err?.message);
   }
 }
+
+// ... existing code ...
 export async function listClothingItemsController(req, res) {
   try {
+    const authUserId = Number(req.user?.id ?? req.user?.user_id);
+
     const filters = {
       item_id: req.query.item_id,
-      user_id: req.query.user_id,
-      category_id: req.query.category_id,
-      size_id: req.query.size_id,
+      user_id: authUserId, // force: only items of logged-in user
       is_active: req.query.is_active,
+
       name: req.query.name,
       brand: req.query.brand,
-      color: req.query.color
+      color: req.query.color,
+
+      main_category: req.query.main_category,
+      category: req.query.category,
+      type: req.query.type,
+      gender: req.query.gender,
+      event: req.query.event,
+      seasons: req.query.seasons,
+      material: req.query.material,
+      size: req.query.size
     };
 
     const options = {
@@ -85,7 +101,7 @@ export async function listClothingItemsController(req, res) {
     };
 
     const data = await listClothingItemsService(filters, options);
-    return Success(res, data);
+    return SuccessSafe(res, data);
   } catch (err) {
     return BadRequest(res, err?.message);
   }

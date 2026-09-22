@@ -17,10 +17,13 @@ export async function loginService(email, password) {
   if (!ok) throw new Error("CREDENTIAL_INVALID");
 
   const secret = Buffer.from(process.env.JWT_SECRET || "<JWT_SECRET>", "base64");
+  const userId = Number(user.user_id);
+
   return {
-    token: jwt.sign({ user_id: Number(user.user_id) }, secret, {
+    token: jwt.sign({ user_id: userId }, secret, {
       algorithm: "HS512",
       expiresIn: "12h"
-    })
+    }),
+    user_id: userId
   };
 }

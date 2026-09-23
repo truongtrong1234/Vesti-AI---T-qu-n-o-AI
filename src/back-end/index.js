@@ -39,7 +39,9 @@ app.use((err, req, res, next) => {
   console.error(err);
   res.status(500).json({ ok: false, error: "Internal Server Error" });
 });
-
+app.get('/', (req, res) => {
+    res.send('Vesti Backend is running!');
+});
 const port = Number(process.env.PORT);
 app.listen(port, () => {
   console.log(`Server running on http://localhost:${port}`);

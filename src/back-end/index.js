@@ -49,9 +49,8 @@ app.use("/api/ai-suggest", aiSuggestRouter);
 
 // Serve static files (frontend)
 app.use(express.static(distPath));
-
-// Fallback cho SPA: mọi route không phải /api sẽ trả về index.html
-app.get("*", (_req, res) => {
+// Fallback cho SPA: mọi route khác (không phải /api/...) trả về index.html
+app.get(/^(?!\/api\/)/, (_req, res) => {
   res.sendFile(path.join(distPath, "index.html"));
 });
 
